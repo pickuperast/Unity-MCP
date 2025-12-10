@@ -75,6 +75,21 @@ namespace com.IvanMurzak.Unity.MCP.Runtime.Data
             }
         }
 
+        public static void AppendCsv(StringBuilder sb, GameObjectMetadata metadata, int depth, ref int limit)
+        {
+            if (limit &lt;= 0)
+            {
+                sb.AppendLine(&quot;... [Limit reached] ...&quot;);
+                return;
+            }
+            limit--;
+            sb.AppendLine($"{metadata.instanceID},{metadata.activeInHierarchy},{metadata.activeSelf},{metadata.tag ?? &quot;&quot;},{metadata.name ?? &quot;&quot;},{depth}");
+            foreach (var child in metadata.children)
+            {
+                AppendCsv(sb, child, depth + 1, ref limit);
+            }
+        }
+
         public static GameObjectMetadata? FromGameObject(GameObject go, int includeChildrenDepth = 3)
         {
             if (go == null)

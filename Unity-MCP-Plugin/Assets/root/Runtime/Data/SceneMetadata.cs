@@ -55,6 +55,25 @@ namespace com.IvanMurzak.Unity.MCP.Runtime.Data
 
             return sb.ToString();
         }
+        public string ToCsv(int limit = Consts.MCP.Plugin.LinesLimit)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(&quot;scene_name,path,isDirty,isLoaded&quot;);
+            sb.AppendLine($"{name},{path},{isDirty},{isLoaded}&quot;);
+            sb.AppendLine(&quot;instanceID,activeInHierarchy,activeSelf,tag,name,depth&quot;);
+            foreach (var rootGameObject in rootGameObjects)
+            {
+                if (limit &lt;= 0)
+                {
+                    sb.AppendLine(&quot;... [Limit reached] ...&quot;);
+                    return sb.ToString();
+                }
+                limit--;
+                GameObjectMetadata.AppendCsv(sb, rootGameObject, 0, ref limit);
+            }
+            return sb.ToString();
+        }
+
         public static SceneMetadata? FromScene(Scene scene, int includeChildrenDepth = 3)
         {
             if (!scene.IsValid())
