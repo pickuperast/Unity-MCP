@@ -102,10 +102,9 @@ namespace com.IvanMurzak.Unity.MCP
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var mcpPlugin = new McpPluginBuilder(version, loggerProvider)
-                .AddMcpPlugin()
                 .WithConfig(config =>
                 {
-                    _logger.LogInformation("Unity-MCP server host: {host}", Host);
+                    _logger.LogInformation("AI Game Developer server host: {host}", Host);
                     config.Host = Host;
                 })
                 .AddLogging(loggingBuilder =>

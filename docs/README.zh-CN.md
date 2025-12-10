@@ -12,22 +12,25 @@
 [![License](https://img.shields.io/github/license/IvanMurzak/Unity-MCP?label=License&labelColor=333A41)](https://github.com/IvanMurzak/Unity-MCP/blob/main/LICENSE)
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
-  <img src="https://github.com/IvanMurzak/Unity-MCP/raw/main/docs/img/level-building.gif" alt="AI work" title="Level building" width="100%">
+  <img src="https://github.com/IvanMurzak/Unity-MCP/raw/main/docs/img/promo/ai-developer-banner.jpg" alt="AI work" title="Level building" width="100%">
 
   <b>[English](https://github.com/IvanMurzak/Unity-MCP/blob/main/README.md) | [日本語](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/README.ja.md) | [Español](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/README.es.md)</b>
 
 </div>
 
-`Unity MCP` 是一个由AI驱动的游戏开发助手，充当 `MCP 客户端` 与 `Unity` 之间的桥梁。只需在聊天中输入消息，即可使用您选择的任何高级LLM模型完成工作。遇到需要修复的问题？让AI来解决。**[观看演示视频](https://www.youtube.com/watch?v=kQUOCQ-c0-M&list=PLyueiUu0xU70uzNoOaanGQD2hiyJmqHtK)**。
+`Unity MCP` 是一个由AI驱动的游戏开发助手，**适用于编辑器和运行时**。通过MCP将 **Claude**、**Cursor** 和 **Windsurf** 连接到Unity。自动化工作流程、生成代码，并**在您的游戏中启用AI**。
+
+与其他工具不同，该插件可在**编译后的游戏内部**运行，支持实时AI调试和玩家-AI交互。
 
 > **[💬 加入我们的Discord服务器](https://discord.gg/cfbdMZX99G)** - 提问、展示你的作品，与其他开发者交流！
 
 ## 功能特性
 
+- ✔️ **运行时AI** - 在编译后的游戏中直接使用LLM实现动态NPC行为或调试
 - ✔️ **自然对话** - 像与人类交谈一样与AI聊天
 - ✔️ **代码辅助** - 请AI编写代码和运行测试
 - ✔️ **调试支持** - 请AI获取日志并修复错误
-- ✔️ **多种LLM提供商** - 使用来自Anthropic、OpenAI、Microsoft或任何其他提供商的代理，无限制
+- ✔️ **多种LLM提供商** - 使用来自 **Anthropic**、**OpenAI**、**DeepSeek**、Microsoft或任何其他提供商的代理，无限制
 - ✔️ **灵活部署** - 通过配置支持本地（stdio）和远程（http）工作
 - ✔️ **丰富工具集** - 广泛的默认[MCP工具](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/default-mcp-tools.md)
 - ✔️ **可扩展** - 在您的项目代码中创建[自定义MCP工具](#添加自定义mcp工具)
@@ -50,7 +53,8 @@
   - [步骤3：配置 `MCP 客户端`](#步骤3配置-mcp-客户端)
     - [自动配置](#自动配置)
     - [手动配置](#手动配置)
-- [使用AI](#使用ai)
+    - [命令行配置](#命令行配置)
+- [AI工作流示例：Claude 和 Gemini](#ai工作流示例claude-和-gemini)
   - [LLM高级功能](#llm高级功能)
     - [核心功能](#核心功能)
     - [反射功能](#反射功能)
@@ -96,7 +100,7 @@
 
 ### 选项1 - 安装程序
 
-- **[⬇️ 下载安装程序](https://github.com/IvanMurzak/Unity-MCP/releases/download/0.22.1/AI-Game-Dev-Installer.unitypackage)**
+- **[⬇️ 下载安装程序](https://github.com/IvanMurzak/Unity-MCP/releases/download/0.28.0/AI-Game-Dev-Installer.unitypackage)**
 - **📂 将安装程序导入Unity项目**
   > - 您可以双击文件 - Unity会自动打开它
   > - 或者：先打开Unity编辑器，然后点击 `Assets/Import Package/Custom Package`，选择文件
@@ -139,64 +143,62 @@ openupm add com.ivanmurzak.unity.mcp
 
 如果自动配置因任何原因对您不起作用，请使用 `AI Game Developer (Unity-MCP)` 窗口中的JSON手动配置任何 `MCP 客户端`。
 
-<details>
-  <summary>为 <b>Windows</b> 配置 <b><code>Claude Code</code></b></summary>
+### 命令行配置
 
-  将 `unityProjectPath` 替换为您的实际项目路径
+**1. 为您的环境选择`<command>`**
+
+| 平台                | `<command>` |
+|---------------------|----------------|
+| Windows x64         | `"<unityProjectPath>/Library/mcp-server/win-x64/unity-mcp-server.exe" port=<port> client-transport=stdio` |
+| Windows x86         | `"<unityProjectPath>/Library/mcp-server/win-x86/unity-mcp-server.exe" port=<port> client-transport=stdio` |
+| Windows arm64       | `"<unityProjectPath>/Library/mcp-server/win-arm64/unity-mcp-server.exe" port=<port> client-transport=stdio` |
+| MacOS Apple-Silicon | `"<unityProjectPath>/Library/mcp-server/osx-arm64/unity-mcp-server" port=<port> client-transport=stdio` |
+| MacOS Apple-Intel   | `"<unityProjectPath>/Library/mcp-server/osx-x64/unity-mcp-server" port=<port> client-transport=stdio` |
+| Linux x64           | `"<unityProjectPath>/Library/mcp-server/linux-x64/unity-mcp-server" port=<port> client-transport=stdio` |
+| Linux arm64         | `"<unityProjectPath>/Library/mcp-server/linux-arm64/unity-mcp-server" port=<port> client-transport=stdio` |
+
+**2. 将`<unityProjectPath>`替换为Unity项目的完整路径**
+**3. 将`<port>`替换为AI Game Developer配置中的端口**
+**4. 使用命令行添加MCP服务器**
+
+<details>
+  <summary><img src="https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/mcp-clients/gemini-64.png" width="16" height="16" alt="Gemini"> Gemini</summary>
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/win-x64/unity-mcp-server.exe" client-transport=stdio
+  gemini mcp add ai-game-developer <command>
   ```
-
+  > 从上表中替换`<command>`
 </details>
 
 <details>
-  <summary>为 <b>MacOS Apple-Silicon</b> 配置 <b><code>Claude Code</code></b></summary>
-
-  将 `unityProjectPath` 替换为您的实际项目路径
+  <summary><img src="https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/mcp-clients/claude-64.png" width="16" height="16" alt="Gemini"> Claude Code</summary>
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/osx-arm64/unity-mcp-server" client-transport=stdio
+  claude mcp add ai-game-developer <command>
   ```
-
+  > 从上表中替换`<command>`
 </details>
 
 <details>
-  <summary>为 <b>MacOS Apple-Intel</b> 配置 <b><code>Claude Code</code></b></summary>
-
-  将 `unityProjectPath` 替换为您的实际项目路径
+  <summary><img src="https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/mcp-clients/github-copilot-64.png" width="16" height="16" alt="Gemini"> GitHub Copilot CLI</summary>
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/osx-x64/unity-mcp-server" client-transport=stdio
+  copilot
   ```
-
-</details>
-
-<details>
-  <summary>为 <b>Linux x64</b> 配置 <b><code>Claude Code</code></b></summary>
-
-  将 `unityProjectPath` 替换为您的实际项目路径
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/linux-x64/unity-mcp-server" client-transport=stdio
+  /mcp add
   ```
 
-</details>
-
-<details>
-  <summary>为 <b>Linux arm64</b> 配置 <b><code>Claude Code</code></b></summary>
-
-  将 `unityProjectPath` 替换为您的实际项目路径
-
-  ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/linux-arm64/unity-mcp-server" client-transport=stdio
-  ```
-
+  服务器名称: `ai-game-developer`
+  服务器类型: `local`
+  命令: `<command>`
+  > 从上表中替换`<command>`
 </details>
 
 ---
 
-# 使用AI
+# AI工作流示例：Claude 和 Gemini
 
 在您的 `MCP 客户端` 中与AI（LLM）交流。要求它做任何您想要的事情。您对任务或想法描述得越好，它的表现就越好。
 
@@ -581,6 +583,8 @@ MCP - 模型上下文协议。简而言之，这是AI的 `USB Type-C`，专门�
 # 贡献 💙💛
 
 非常欢迎贡献。带来您的想法，让我们让游戏开发比以往任何时候都更简单！您有新的 `MCP 工具` 或功能的想法，或者发现了错误并知道如何修复它吗？
+
+**如果您觉得这个项目有用，请给它一个星标 🌟！**
 
 1. 👉 [阅读开发文档](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/dev/Development.zh-CN.md)
 2. 👉 [Fork项目](https://github.com/IvanMurzak/Unity-MCP/fork)

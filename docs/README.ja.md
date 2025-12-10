@@ -12,22 +12,25 @@
 [![License](https://img.shields.io/github/license/IvanMurzak/Unity-MCP?label=License&labelColor=333A41)](https://github.com/IvanMurzak/Unity-MCP/blob/main/LICENSE)
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
-  <img src="https://github.com/IvanMurzak/Unity-MCP/raw/main/docs/img/level-building.gif" alt="AI work" title="Level building" width="100%">
+  <img src="https://github.com/IvanMurzak/Unity-MCP/raw/main/docs/img/promo/ai-developer-banner.jpg" alt="AI work" title="Level building" width="100%">
 
   <b>[English](https://github.com/IvanMurzak/Unity-MCP/blob/main/README.md) | [中文](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/README.zh-CN.md) | [Español](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/README.es.md)</b>
 
 </div>
 
-`Unity MCP` は `MCP クライアント` と `Unity` の橋渡しとして機能するAI駆動のゲーム開発アシスタントです。チャットにメッセージを入力するだけで、お好みの高度なLLMモデルを使用して作業を完了できます。修正が必要な問題がありますか？AIに修正してもらいましょう。**[デモ動画をご覧ください](https://www.youtube.com/watch?v=kQUOCQ-c0-M&list=PLyueiUu0xU70uzNoOaanGQD2hiyJmqHtK)**。
+`Unity MCP` は**エディターとランタイム両方に対応した**AI駆動のゲーム開発アシスタントです。MCP経由で **Claude**、**Cursor**、**Windsurf** をUnityに接続します。ワークフローを自動化し、コードを生成し、**ゲーム内でAIを有効化**できます。
+
+他のツールとは異なり、このプラグインは**コンパイル済みゲーム内で動作**し、リアルタイムAIデバッグやプレイヤー-AI間のインタラクションを可能にします。
 
 > **[💬 Discordサーバーに参加](https://discord.gg/cfbdMZX99G)** - 質問、作品の紹介、他の開発者との交流ができます！
 
 ## 機能
 
+- ✔️ **ランタイムAI** - コンパイル済みゲーム内でLLMを直接使用し、動的NPCの動作やデバッグを実現
 - ✔️ **自然な会話** - 人間と話すようにAIとチャット
 - ✔️ **コードアシスタンス** - AIにコードの作成とテストの実行を依頼
 - ✔️ **デバッグサポート** - AIにログの取得とエラーの修正を依頼
-- ✔️ **複数のLLMプロバイダー** - Anthropic、OpenAI、Microsoft、または他のプロバイダーのエージェントを制限なく使用
+- ✔️ **複数のLLMプロバイダー** - **Anthropic**、**OpenAI**、**DeepSeek**、Microsoft、または他のプロバイダーのエージェントを制限なく使用
 - ✔️ **柔軟なデプロイメント** - 設定によりローカル（stdio）およびリモート（http）で動作
 - ✔️ **豊富なツールセット** - 幅広いデフォルト[MCPツール](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/default-mcp-tools.md)
 - ✔️ **拡張可能** - プロジェクトコードで[カスタムMCPツール](#カスタムmcpツールの追加)を作成
@@ -50,7 +53,8 @@
   - [ステップ3：`MCPクライアント`の設定](#ステップ3mcpクライアントの設定)
     - [自動設定](#自動設定)
     - [手動設定](#手動設定)
-- [AIの使用](#aiの使用)
+    - [コマンドライン設定](#コマンドライン設定)
+- [AIワークフロー例：Claude と Gemini](#aiワークフロー例claude-と-gemini)
   - [LLMの高度な機能](#llmの高度な機能)
     - [コア機能](#コア機能)
     - [リフレクション機能](#リフレクション機能)
@@ -96,7 +100,7 @@
 
 ### オプション1 - インストーラー
 
-- **[⬇️ インストーラーをダウンロード](https://github.com/IvanMurzak/Unity-MCP/releases/download/0.22.1/AI-Game-Dev-Installer.unitypackage)**
+- **[⬇️ インストーラーをダウンロード](https://github.com/IvanMurzak/Unity-MCP/releases/download/0.28.0/AI-Game-Dev-Installer.unitypackage)**
 - **📂 インストーラーをUnityプロジェクトにインポート**
   > - ファイルをダブルクリック - Unityが自動的に開きます
   > - または：最初にUnityエディターを開き、`Assets/Import Package/Custom Package`をクリックして、ファイルを選択
@@ -139,64 +143,62 @@ openupm add com.ivanmurzak.unity.mcp
 
 何らかの理由で自動設定が動作しない場合は、`AI Game Developer (Unity-MCP)`ウィンドウのJSONを使用して任意の`MCPクライアント`を手動設定してください。
 
-<details>
-  <summary><b>Windows</b>用<b><code>Claude Code</code></b>の設定</summary>
+### コマンドライン設定
 
-  `unityProjectPath`を実際のプロジェクトパスに置き換えてください
+**1. 環境に応じた`<command>`を選択**
+
+| プラットフォーム | `<command>` |
+|---------------------|----------------|
+| Windows x64         | `"<unityProjectPath>/Library/mcp-server/win-x64/unity-mcp-server.exe" port=<port> client-transport=stdio` |
+| Windows x86         | `"<unityProjectPath>/Library/mcp-server/win-x86/unity-mcp-server.exe" port=<port> client-transport=stdio` |
+| Windows arm64       | `"<unityProjectPath>/Library/mcp-server/win-arm64/unity-mcp-server.exe" port=<port> client-transport=stdio` |
+| MacOS Apple-Silicon | `"<unityProjectPath>/Library/mcp-server/osx-arm64/unity-mcp-server" port=<port> client-transport=stdio` |
+| MacOS Apple-Intel   | `"<unityProjectPath>/Library/mcp-server/osx-x64/unity-mcp-server" port=<port> client-transport=stdio` |
+| Linux x64           | `"<unityProjectPath>/Library/mcp-server/linux-x64/unity-mcp-server" port=<port> client-transport=stdio` |
+| Linux arm64         | `"<unityProjectPath>/Library/mcp-server/linux-arm64/unity-mcp-server" port=<port> client-transport=stdio` |
+
+**2. `<unityProjectPath>`をUnityプロジェクトへのフルパスに置き換える**
+**3. `<port>`をAI Game Developer設定のポートに置き換える**
+**4. コマンドラインを使用してMCPサーバーを追加**
+
+<details>
+  <summary><img src="https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/mcp-clients/gemini-64.png" width="16" height="16" alt="Gemini"> Gemini</summary>
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/win-x64/unity-mcp-server.exe" client-transport=stdio
+  gemini mcp add ai-game-developer <command>
   ```
-
+  > 上の表から`<command>`を置き換えてください
 </details>
 
 <details>
-  <summary><b>MacOS Apple-Silicon</b>用<b><code>Claude Code</code></b>の設定</summary>
-
-  `unityProjectPath`を実際のプロジェクトパスに置き換えてください
+  <summary><img src="https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/mcp-clients/claude-64.png" width="16" height="16" alt="Gemini"> Claude Code</summary>
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/osx-arm64/unity-mcp-server" client-transport=stdio
+  claude mcp add ai-game-developer <command>
   ```
-
+  > 上の表から`<command>`を置き換えてください
 </details>
 
 <details>
-  <summary><b>MacOS Apple-Intel</b>用<b><code>Claude Code</code></b>の設定</summary>
-
-  `unityProjectPath`を実際のプロジェクトパスに置き換えてください
+  <summary><img src="https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/mcp-clients/github-copilot-64.png" width="16" height="16" alt="Gemini"> GitHub Copilot CLI</summary>
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/osx-x64/unity-mcp-server" client-transport=stdio
+  copilot
   ```
-
-</details>
-
-<details>
-  <summary><b>Linux x64</b>用<b><code>Claude Code</code></b>の設定</summary>
-
-  `unityProjectPath`を実際のプロジェクトパスに置き換えてください
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/linux-x64/unity-mcp-server" client-transport=stdio
+  /mcp add
   ```
 
-</details>
-
-<details>
-  <summary><b>Linux arm64</b>用<b><code>Claude Code</code></b>の設定</summary>
-
-  `unityProjectPath`を実際のプロジェクトパスに置き換えてください
-
-  ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/linux-arm64/unity-mcp-server" client-transport=stdio
-  ```
-
+  サーバー名: `ai-game-developer`
+  サーバータイプ: `local`
+  コマンド: `<command>`
+  > 上の表から`<command>`を置き換えてください
 </details>
 
 ---
 
-# AIの使用
+# AIワークフロー例：Claude と Gemini
 
 `MCPクライアント`でAI（LLM）と通信します。やりたいことは何でも依頼してください。タスクやアイデアをより良く説明すればするほど、より良いパフォーマンスを発揮します。
 
@@ -581,6 +583,8 @@ MCP - Model Context Protocol。簡潔に言うと、これはAI、特にLLM（La
 # 貢献 💙💛
 
 貢献を高く評価しています。あなたのアイデアを持参して、ゲーム開発をこれまで以上にシンプルにしましょう！新しい`MCPツール`や機能のアイデアがあるか、バグを発見して修正方法を知っていますか？
+
+**このプロジェクトが役に立ったら、ぜひスター 🌟 をお願いします！**
 
 1. 👉 [開発ドキュメントを読む](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/dev/Development.ja.md)
 2. 👉 [プロジェクトをフォーク](https://github.com/IvanMurzak/Unity-MCP/fork)

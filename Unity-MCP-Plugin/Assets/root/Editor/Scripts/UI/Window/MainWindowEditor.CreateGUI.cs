@@ -10,6 +10,7 @@
 
 #nullable enable
 using System;
+using System.Linq;
 using com.IvanMurzak.McpPlugin.Common;
 using com.IvanMurzak.Unity.MCP.Runtime.Utils;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -90,6 +91,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor
 
                 SaveChanges($"[AI Game Developer] Timeout Changed: {newValue} ms");
                 UnityMcpPlugin.Instance.BuildMcpPluginIfNeeded();
+                UnityMcpPlugin.Instance.AddUnityLogCollectorIfNeeded(() => new BufferedFileLogStorage());
                 UnityMcpPlugin.ConnectIfNeeded();
             });
 
@@ -110,6 +112,10 @@ namespace com.IvanMurzak.Unity.MCP.Editor
                 UnityMcpPlugin.Host = newValue;
                 SaveChanges($"[{nameof(MainWindowEditor)}] Host Changed: {newValue}");
                 Invalidate();
+
+                UnityMcpPlugin.Instance.DisposeMcpPluginInstance();
+                UnityMcpPlugin.Instance.BuildMcpPluginIfNeeded();
+                UnityMcpPlugin.Instance.AddUnityLogCollectorIfNeeded(() => new BufferedFileLogStorage());
             });
 
             var btnConnectOrDisconnect = root.Query<Button>("btnConnectOrDisconnect").First();
@@ -143,7 +149,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor
                     };
                     inputFieldHost.tooltip = plugin.KeepConnected.CurrentValue
                         ? "Editable only when disconnected from the MCP Server."
-                        : $"The server URL. http://localhost:{Consts.Hub.DefaultPort}";
+                        : $"The server URL. http://localhost:{UnityMcpPlugin.GeneratePortFromDirectory()}";
 
                     // Update the style class
                     if (inputFieldHost.isReadOnly)
@@ -222,6 +228,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor
                     UnityMcpPlugin.KeepConnected = true;
                     UnityMcpPlugin.Instance.Save();
                     UnityMcpPlugin.Instance.BuildMcpPluginIfNeeded();
+                    UnityMcpPlugin.Instance.AddUnityLogCollectorIfNeeded(() => new BufferedFileLogStorage());
                     UnityMcpPlugin.ConnectIfNeeded();
                 }
                 else if (btnConnectOrDisconnect.text.Equals(ServerButtonText_Disconnect, StringComparison.OrdinalIgnoreCase))
@@ -230,7 +237,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor
                     UnityMcpPlugin.Instance.Save();
                     if (UnityMcpPlugin.Instance.HasMcpPluginInstance)
                     {
-                        UnityMcpPlugin.Instance.Disconnect();
+                        _ = UnityMcpPlugin.Instance.Disconnect();
                     }
                 }
                 else if (btnConnectOrDisconnect.text.Equals(ServerButtonText_Stop, StringComparison.OrdinalIgnoreCase))
@@ -239,7 +246,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor
                     UnityMcpPlugin.Instance.Save();
                     if (UnityMcpPlugin.Instance.HasMcpPluginInstance)
                     {
-                        UnityMcpPlugin.Instance.Disconnect();
+                        _ = UnityMcpPlugin.Instance.Disconnect();
                     }
                 }
                 else
@@ -247,6 +254,42 @@ namespace com.IvanMurzak.Unity.MCP.Editor
                     throw new Exception("Unknown button state: " + btnConnectOrDisconnect.text);
                 }
             }));
+
+            // Tools Configuration
+            // -----------------------------------------------------------------
+            var btnOpenTools = root.Query<Button>("btnOpenTools").First();
+            btnOpenTools.RegisterCallback<ClickEvent>(evt =>
+            {
+                McpToolsWindow.ShowWindow();
+            });
+
+            var toolsStatusLabel = root.Query<Label>("toolsStatusLabel").First();
+
+            McpPlugin.McpPlugin.DoAlways(plugin =>
+            {
+                var toolManager = plugin.McpManager.ToolManager;
+                if (toolManager == null)
+                {
+                    toolsStatusLabel.text = "Total tools (0), active tools (0), disabled tools (0)";
+                    return;
+                }
+
+                void UpdateStats()
+                {
+                    var allTools = toolManager.GetAllTools();
+                    var total = allTools.Count();
+                    var active = allTools.Count(t => toolManager.IsToolEnabled(t.Name));
+                    var disabled = total - active;
+                    toolsStatusLabel.text = $"Total tools ({total}), active tools ({active}), disabled tools ({disabled})";
+                }
+
+                UpdateStats();
+
+                toolManager.OnToolsUpdated
+                    .ObserveOnCurrentSynchronizationContext()
+                    .Subscribe(_ => UpdateStats())
+                    .AddTo(_disposables);
+            }).AddTo(_disposables);
 
             // Configure MCP Client
             // -----------------------------------------------------------------

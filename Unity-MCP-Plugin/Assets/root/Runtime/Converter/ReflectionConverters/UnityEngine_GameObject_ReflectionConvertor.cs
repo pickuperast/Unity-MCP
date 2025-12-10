@@ -61,7 +61,8 @@ namespace com.IvanMurzak.Unity.MCP.Reflection.Convertor
             bool recursive = true,
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
             int depth = 0, StringBuilder? stringBuilder = null,
-            ILogger? logger = null)
+            ILogger? logger = null,
+            SerializationContext? context = null)
         {
             if (obj == null)
                 return SerializedMember.FromValue(reflector, type, value: null, name: name);
@@ -79,14 +80,16 @@ namespace com.IvanMurzak.Unity.MCP.Reflection.Convertor
                         flags: flags,
                         depth: depth,
                         stringBuilder: stringBuilder,
-                        logger: logger),
+                        logger: logger,
+                        context: context),
                     props = SerializeProperties(
                         reflector,
                         obj: obj,
                         flags: flags,
                         depth: depth,
                         stringBuilder: stringBuilder,
-                        logger: logger)
+                        logger: logger,
+                        context: context)
                 }.SetValue(reflector, new GameObjectRef(unityObject?.GetInstanceID() ?? 0));
             }
             else
@@ -102,7 +105,8 @@ namespace com.IvanMurzak.Unity.MCP.Reflection.Convertor
             BindingFlags flags,
             int depth = 0,
             StringBuilder? stringBuilder = null,
-            ILogger? logger = null)
+            ILogger? logger = null,
+            SerializationContext? context = null)
         {
             var serializedFields = base.SerializeFields(
                 reflector: reflector,
@@ -110,7 +114,8 @@ namespace com.IvanMurzak.Unity.MCP.Reflection.Convertor
                 flags: flags,
                 depth: depth,
                 stringBuilder: stringBuilder,
-                logger: logger) ?? new();
+                logger: logger,
+                context: context) ?? new();
 
             var go = obj as UnityEngine.GameObject;
             if (go == null)
@@ -130,7 +135,8 @@ namespace com.IvanMurzak.Unity.MCP.Reflection.Convertor
                     flags: flags,
                     depth: depth + 1,
                     stringBuilder: stringBuilder,
-                    logger: logger
+                    logger: logger,
+                    context: context
                 );
                 serializedFields.Add(componentSerialized);
             }
@@ -148,13 +154,31 @@ namespace com.IvanMurzak.Unity.MCP.Reflection.Convertor
         {
             var padding = StringUtils.GetPadding(depth);
 
-            if (logger?.IsEnabled(LogLevel.Warning) == true)
-                logger.LogWarning($"{padding}Cannot set value for '{type.GetTypeShortName()}'. This type is not supported for setting values. Maybe did you want to set a field or a property? If so, set the value in the '{nameof(SerializedMember.fields)}' or '{nameof(SerializedMember.props)}' property instead.");
+            if (logger?.IsEnabled(LogLevel.Trace) == true)
+                logger.LogTrace($"{padding}Set value type='{type.GetTypeName(pretty: true)}'. Convertor='{GetType().GetTypeShortName()}'.");
 
-            if (stringBuilder != null)
-                stringBuilder.AppendLine($"{padding}[Warning] Cannot set value for '{type.GetTypeName(pretty: false)}'. This type is not supported for setting values. Maybe did you want to set a field or a property? If so, set the value in the '{nameof(SerializedMember.fields)}' or '{nameof(SerializedMember.props)}' property instead.");
+            try
+            {
+                obj = value
+                    .ToGameObjectRef(
+                        reflector: reflector,
+                        suppressException: false,
+                        depth: depth,
+                        stringBuilder: stringBuilder,
+                        logger: logger)
+                    .FindGameObject();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (logger?.IsEnabled(LogLevel.Error) == true)
+                    logger.LogError(ex, $"{padding}[Error] Failed to deserialize value for type '{type.GetTypeName(pretty: false)}'. Convertor: {GetType().GetTypeShortName()}. Exception: {ex.Message}");
 
-            return false;
+                if (stringBuilder != null)
+                    stringBuilder.AppendLine($"{padding}[Error] Failed to set value for type '{type.GetTypeName(pretty: false)}'. Convertor: {GetType().GetTypeShortName()}. Exception: {ex.Message}");
+
+                return false;
+            }
         }
 
         protected override bool TryPopulateField(
@@ -167,6 +191,9 @@ namespace com.IvanMurzak.Unity.MCP.Reflection.Convertor
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
             ILogger? logger = null)
         {
+            if (logger?.IsEnabled(LogLevel.Information) == true)
+                logger.LogInformation($"[{GetType().GetTypeShortName()}] TryPopulateField called for obj type: {obj?.GetType().GetTypeName(pretty: false)}, field: {fieldValue.name}");
+
             var padding = StringUtils.GetPadding(depth);
             var go = obj as UnityEngine.GameObject;
             if (go == null)
@@ -295,7 +322,8 @@ namespace com.IvanMurzak.Unity.MCP.Reflection.Convertor
             string? fallbackName = null,
             int depth = 0,
             StringBuilder? stringBuilder = null,
-            ILogger? logger = null)
+            ILogger? logger = null,
+            DeserializationContext? context = null)
         {
             return data.valueJsonElement
                 .ToGameObjectRef(

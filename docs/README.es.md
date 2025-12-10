@@ -12,22 +12,25 @@
 [![License](https://img.shields.io/github/license/IvanMurzak/Unity-MCP?label=License&labelColor=333A41)](https://github.com/IvanMurzak/Unity-MCP/blob/main/LICENSE)
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraine.svg)](https://stand-with-ukraine.pp.ua)
 
-  <img src="https://github.com/IvanMurzak/Unity-MCP/raw/main/docs/img/level-building.gif" alt="AI work" title="Level building" width="100%">
+  <img src="https://github.com/IvanMurzak/Unity-MCP/raw/main/docs/img/promo/ai-developer-banner.jpg" alt="AI work" title="Level building" width="100%">
 
   <b>[English](https://github.com/IvanMurzak/Unity-MCP/blob/main/README.md) | [中文](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/README.zh-CN.md) | [日本語](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/README.ja.md)</b>
 
 </div>
 
-`Unity MCP` es un asistente de desarrollo de juegos impulsado por IA que sirve como puente entre el `Cliente MCP` y `Unity`. Simplemente escribe un mensaje en el chat y haz el trabajo usando cualquier modelo LLM avanzado de tu elección. ¿Tienes un problema que arreglar? Pídele a la IA que lo solucione. **[Mira los videos de demostración](https://www.youtube.com/watch?v=kQUOCQ-c0-M&list=PLyueiUu0xU70uzNoOaanGQD2hiyJmqHtK)**.
+`Unity MCP` es un asistente de desarrollo de juegos impulsado por IA **para Editor y Runtime**. Conecta **Claude**, **Cursor** y **Windsurf** a Unity vía MCP. Automatiza flujos de trabajo, genera código y **habilita IA dentro de tus juegos**.
+
+A diferencia de otras herramientas, este plugin funciona **dentro de tu juego compilado**, permitiendo depuración IA en tiempo real e interacción jugador-IA.
 
 > **[💬 Únete a nuestro servidor de Discord](https://discord.gg/cfbdMZX99G)** - ¡Haz preguntas, muestra tu trabajo y conéctate con otros desarrolladores!
 
 ## Características
 
+- ✔️ **IA en Runtime** - Usa LLMs directamente dentro de tu juego compilado para comportamiento dinámico de NPCs o depuración
 - ✔️ **Conversación natural** - Chatea con la IA como lo harías con un humano
 - ✔️ **Asistencia de código** - Pídele a la IA que escriba código y ejecute pruebas
 - ✔️ **Soporte de depuración** - Pídele a la IA que obtenga registros y corrija errores
-- ✔️ **Múltiples proveedores de LLM** - Usa agentes de Anthropic, OpenAI, Microsoft o cualquier otro proveedor sin límites
+- ✔️ **Múltiples proveedores de LLM** - Usa agentes de **Anthropic**, **OpenAI**, **DeepSeek**, Microsoft o cualquier otro proveedor sin límites
 - ✔️ **Despliegue flexible** - Funciona localmente (stdio) y remotamente (http) por configuración
 - ✔️ **Conjunto de herramientas rico** - Amplio rango de [Herramientas MCP](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/default-mcp-tools.md) por defecto
 - ✔️ **Extensible** - Crea [herramientas MCP personalizadas en el código de tu proyecto](#agregar-herramienta-mcp-personalizada)
@@ -50,7 +53,8 @@
   - [Paso 3: Configurar el `Cliente MCP`](#paso-3-configurar-el-cliente-mcp)
     - [Configuración automática](#configuración-automática)
     - [Configuración manual](#configuración-manual)
-- [Usar IA](#usar-ia)
+    - [Configuración por línea de comandos](#configuración-por-línea-de-comandos)
+- [Ejemplos de Flujo de Trabajo IA: Claude y Gemini](#ejemplos-de-flujo-de-trabajo-ia-claude-y-gemini)
   - [Características avanzadas para LLM](#características-avanzadas-para-llm)
     - [Capacidades principales](#capacidades-principales)
     - [Características de reflexión](#características-de-reflexión)
@@ -96,7 +100,7 @@
 
 ### Opción 1 - Instalador
 
-- **[⬇️ Descargar Instalador](https://github.com/IvanMurzak/Unity-MCP/releases/download/0.22.1/AI-Game-Dev-Installer.unitypackage)**
+- **[⬇️ Descargar Instalador](https://github.com/IvanMurzak/Unity-MCP/releases/download/0.28.0/AI-Game-Dev-Installer.unitypackage)**
 - **📂 Importar instalador al proyecto Unity**
   > - Puedes hacer doble clic en el archivo - Unity lo abrirá automáticamente
   > - O: Abre Unity Editor primero, luego haz clic en `Assets/Import Package/Custom Package`, y elige el archivo
@@ -139,64 +143,62 @@ Elige un solo `Cliente MCP` que prefieras - no necesitas instalar todos. Esta se
 
 Si la configuración automática no funciona por alguna razón, usa el JSON de la ventana `AI Game Developer (Unity-MCP)` para configurar cualquier `Cliente MCP` manualmente.
 
-<details>
-  <summary>Configurar <b><code>Claude Code</code></b> para <b>Windows</b></summary>
+### Configuración por línea de comandos
 
-  Reemplaza `unityProjectPath` con la ruta real de tu proyecto
+**1. Elige tu `<command>` para tu entorno**
+
+| Plataforma          | `<command>` |
+|---------------------|----------------|
+| Windows x64         | `"<unityProjectPath>/Library/mcp-server/win-x64/unity-mcp-server.exe" port=<port> client-transport=stdio` |
+| Windows x86         | `"<unityProjectPath>/Library/mcp-server/win-x86/unity-mcp-server.exe" port=<port> client-transport=stdio` |
+| Windows arm64       | `"<unityProjectPath>/Library/mcp-server/win-arm64/unity-mcp-server.exe" port=<port> client-transport=stdio` |
+| MacOS Apple-Silicon | `"<unityProjectPath>/Library/mcp-server/osx-arm64/unity-mcp-server" port=<port> client-transport=stdio` |
+| MacOS Apple-Intel   | `"<unityProjectPath>/Library/mcp-server/osx-x64/unity-mcp-server" port=<port> client-transport=stdio` |
+| Linux x64           | `"<unityProjectPath>/Library/mcp-server/linux-x64/unity-mcp-server" port=<port> client-transport=stdio` |
+| Linux arm64         | `"<unityProjectPath>/Library/mcp-server/linux-arm64/unity-mcp-server" port=<port> client-transport=stdio` |
+
+**2. Reemplaza `<unityProjectPath>` con la ruta completa al proyecto Unity**
+**3. Reemplaza `<port>` con tu puerto de la configuración de AI Game Developer**
+**4. Agrega el servidor MCP usando la línea de comandos**
+
+<details>
+  <summary><img src="https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/mcp-clients/gemini-64.png" width="16" height="16" alt="Gemini"> Gemini</summary>
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/win-x64/unity-mcp-server.exe" client-transport=stdio
+  gemini mcp add ai-game-developer <command>
   ```
-
+  > Reemplaza `<command>` de la tabla anterior
 </details>
 
 <details>
-  <summary>Configurar <b><code>Claude Code</code></b> para <b>MacOS Apple-Silicon</b></summary>
-
-  Reemplaza `unityProjectPath` con la ruta real de tu proyecto
+  <summary><img src="https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/mcp-clients/claude-64.png" width="16" height="16" alt="Gemini"> Claude Code</summary>
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/osx-arm64/unity-mcp-server" client-transport=stdio
+  claude mcp add ai-game-developer <command>
   ```
-
+  > Reemplaza `<command>` de la tabla anterior
 </details>
 
 <details>
-  <summary>Configurar <b><code>Claude Code</code></b> para <b>MacOS Apple-Intel</b></summary>
-
-  Reemplaza `unityProjectPath` con la ruta real de tu proyecto
+  <summary><img src="https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/img/mcp-clients/github-copilot-64.png" width="16" height="16" alt="Gemini"> GitHub Copilot CLI</summary>
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/osx-x64/unity-mcp-server" client-transport=stdio
+  copilot
   ```
-
-</details>
-
-<details>
-  <summary>Configurar <b><code>Claude Code</code></b> para <b>Linux x64</b></summary>
-
-  Reemplaza `unityProjectPath` con la ruta real de tu proyecto
 
   ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/linux-x64/unity-mcp-server" client-transport=stdio
+  /mcp add
   ```
 
-</details>
-
-<details>
-  <summary>Configurar <b><code>Claude Code</code></b> para <b>Linux arm64</b></summary>
-
-  Reemplaza `unityProjectPath` con la ruta real de tu proyecto
-
-  ```bash
-  claude mcp add Unity-MCP "<unityProjectPath>/Library/mcp-server/linux-arm64/unity-mcp-server" client-transport=stdio
-  ```
-
+  Nombre del servidor: `ai-game-developer`
+  Tipo de servidor: `local`
+  Comando: `<command>`
+  > Reemplaza `<command>` de la tabla anterior
 </details>
 
 ---
 
-# Usar IA
+# Ejemplos de Flujo de Trabajo IA: Claude y Gemini
 
 Comunícate con la IA (LLM) en tu `Cliente MCP`. Pídele que haga cualquier cosa que quieras. Mientras mejor describas tu tarea o idea, mejor será su rendimiento.
 
@@ -581,6 +583,8 @@ Un `Prompt MCP` te permite inyectar prompts predefinidos en la conversación con
 # Contribución 💙💛
 
 Las contribuciones son muy apreciadas. ¡Trae tus ideas y hagamos el desarrollo de juegos más simple que nunca! ¿Tienes una idea para una nueva `Herramienta MCP` o característica, o encontraste un bug y sabes cómo arreglarlo?
+
+**¡Por favor dale una estrella 🌟 a este proyecto si lo encuentras útil!**
 
 1. 👉 [Lee la documentación de desarrollo](https://github.com/IvanMurzak/Unity-MCP/blob/main/docs/dev/Development.es.md)
 2. 👉 [Haz fork del proyecto](https://github.com/IvanMurzak/Unity-MCP/fork)

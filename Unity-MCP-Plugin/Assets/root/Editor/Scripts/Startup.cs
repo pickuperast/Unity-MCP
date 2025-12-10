@@ -21,6 +21,7 @@ namespace com.IvanMurzak.Unity.MCP.Editor
         static Startup()
         {
             UnityMcpPlugin.Instance.BuildMcpPluginIfNeeded();
+            UnityMcpPlugin.Instance.AddUnityLogCollectorIfNeeded(() => new BufferedFileLogStorage());
 
             if (!EnvironmentUtils.IsCi())
                 UnityMcpPlugin.ConnectIfNeeded();
@@ -28,12 +29,11 @@ namespace com.IvanMurzak.Unity.MCP.Editor
             Server.DownloadServerBinaryIfNeeded();
 
             if (Application.dataPath.Contains(" "))
-                Debug.LogError("The project path contains spaces, which may cause issues during usage of Unity-MCP. Please consider the move the project to a folder without spaces.");
+                Debug.LogError("The project path contains spaces, which may cause issues during usage of AI Game Developer. Please consider the move the project to a folder without spaces.");
 
             SubscribeOnEditorEvents();
 
             // Initialize sub-systems
-            LogUtils.EnsureSubscribed(); // log collector
             API.Tool_TestRunner.Init(); // test runner
         }
     }
